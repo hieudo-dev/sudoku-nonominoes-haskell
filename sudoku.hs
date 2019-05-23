@@ -1,4 +1,5 @@
 module Sudoku where
+	import List
 
 	------------------------------- Tipos ------------------------------
 
@@ -6,7 +7,12 @@ module Sudoku where
 
 	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
 
-	------------------------------ Funciones ---------------------------
+	---------------------- Funciones Auxiliares ------------------------
+
+	find :: (a -> Bool) -> [a] -> Maybe a
+	find f list = let candidates = filter f list in case candidates of
+		[] -> Nothing
+		_ -> Just (head candidates)
 
 	-- Devuelve la lista de tuplas (x, xs) donde x es un elemento de la lista dada
 	-- y xs es el resto
@@ -34,13 +40,13 @@ module Sudoku where
 
 
 	-- Devuelve los pares ordenados (i, j) que estan ocupados por algun Nonomino
-	getOccupieds :: [((Int, Int), Nonomino)] -> [(Int, Int)]
-	getOccupieds list = [ (a+i, b+j) | ((a, b), Nonomino points) <- list,
+	getUsedTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
+	getUsedTiles list = [ (a+i, b+j) | ((a, b), Nonomino points) <- list,
 												 (i,j) <- points]
 
 
 	-- Devuelve los pares ordenados (i, j) que esten desocupados
-	getEmpties :: [((Int, Int), Nonomino)] -> [(Int, Int)]
-	getEmpties list = [ (i, j) | i <- [0..8],
+	getEmptyTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
+	getEmptyTiles list = [ (i, j) | i <- [0..8],
 										  j <- [0..8],
-										  not (elem (i, j) $ getOccupieds list)]
+										  not (elem (i, j) $ getUsedTiles list)]
