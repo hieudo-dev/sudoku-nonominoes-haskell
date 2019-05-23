@@ -2,7 +2,7 @@ module Sudoku where
 
 	------------------------------- Tipos ------------------------------
 
-	data Nonomino = Nonomino [(Float, Float)]
+	data Nonomino = Nonomino [(Int, Int)]
 
 	------------------------------ Funciones ---------------------------
 
@@ -17,8 +17,18 @@ module Sudoku where
 	-- Devuelve la lista de todas las posibles permutaciones de 'list'
 	permutations :: [a] -> [[a]]
 	permutations [] = [[]]
-	permutations list =
-		[ x:ys
-		| (x, xs) <- selections list
-		, ys <- permutations xs
-		]
+	permutations list = [x:ys | (x, xs) <- selections list, ys <- permutations xs]
+
+	------------------------------------------
+
+	-- Devuelve la lista de las permutaciones de los nonominos que representan
+	-- tableros validos de sudoku
+	buildSudokus :: [Nonomino] -> [[Int]]
+	buildSudokus nonos = [ list | list <- permutations [1..9], 
+											validOrder list nonos]
+
+	validOrder :: [Int] -> [Nonomino] -> Bool
+	validOrder perm nonos = True
+
+	getOccupied list = [(a+i, b+j) | ((a, b), Nonomino points) <- list,
+												(i,j) <- points]
