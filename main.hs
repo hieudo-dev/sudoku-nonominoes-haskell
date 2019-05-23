@@ -4,4 +4,7 @@ module Main where
 	import Sudoku
 	
 	main = do
+		print(test)
 		print("Hello World!")
+		
+	test = isValidSudoku [1]
