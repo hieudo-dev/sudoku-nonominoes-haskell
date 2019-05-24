@@ -3,7 +3,7 @@ module Sudoku where
 
 	------------------------------- TIPOS ------------------------------
 
-	data Nonomino = Nonomino [(Int, Int)] deriving (Show, Eq)
+	data Nonomino = Nonomino [(Int, Int, Int)] deriving (Show, Eq)
 
 	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
 
@@ -46,23 +46,25 @@ module Sudoku where
 	-- Devuelve la nueva representacion del sudoku que se genera al colocar el nonomino, 
 	-- si no posible devuelve [] 
 	placeNonomino :: Nonomino -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
-	placeNonomino (Nonomino points) list
-		| overlapTiles /= [] = []
-		| otherwise = list ++ [(firstEmpty, Nonomino points)]
+	placeNonomino (Nonomino tiles) list
+		| (overlapTiles /= []) || (not $ isInside (Nonomino tiles) firstEmpty) = []
+		| otherwise = list ++ [(firstEmpty, Nonomino tiles)]
 			where
 				firstEmpty = head $ getEmptyTiles list		-- Primera casilla vacia
 				a = fst firstEmpty
 				b = snd firstEmpty
-				overlapTiles = [ (i+a, j+b) | (i, j) <- points, isUsed (i+a, j+b) list]
-
+				overlapTiles = [ (i+a, j+b) | (i, j, _) <- tiles, isUsed (i+a, j+b) list]
+				isInside (Nonomino tiles) (a, b) = 
+					let outsideTile = find (\(x,y,_) -> (x+a>8) || (y+b>8) || (y+b<0)) tiles
+					in outsideTile == Nothing 
 
 	-- Dado la posicion de una casilla y una representacion del sudoku devuelve si 
 	-- esta casilla esta ocupada en esa representacion 
 	isUsed :: (Int, Int) -> [((Int, Int), Nonomino)] -> Bool
 	isUsed (x, y) list =
 		let
-			overlaps ((u, v), Nonomino points) =
-				find (==True) (map (\(i, j) -> (i+u, j+v) == (x, y)) points) == Just (True)
+			overlaps ((u, v), Nonomino tiles) =
+				find (==True) (map (\(i, j, _) -> (i+u, j+v) == (x, y)) tiles) == Just (True)
 			usedTiles =  find (==True) (map overlaps list)
 		in
 			usedTiles /= Nothing
@@ -70,10 +72,16 @@ module Sudoku where
 
 	-- Devuelve los pares ordenados (i, j) que estan ocupados por algun Nonomino
 	getUsedTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
-	getUsedTiles list = [ (a+i, b+j) | ((a, b), Nonomino points) <- list, (i,j) <- points]
+	getUsedTiles list = [ (a+i, b+j) | ((a, b), Nonomino tiles) <- list, (i,j,_) <- tiles]
 
 
 	-- Devuelve los pares ordenados (i, j) que esten desocupados
 	getEmptyTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
 	getEmptyTiles list = [ (i, j) | i <- [0..8], j <- [0..8], not (elem (i, j) $ getUsedTiles list)]
 
+	----------------------- SOLUCION SUDOKU -----------------------------
+
+	getRow :: Int -> [((Int, Int), Nonomino)] -> [Int]
+	getRow x sudoku = [ n | ((a,b), Nonomino tiles) <- sudoku,
+									(i, j, n) <- tiles,
+									a + i == x]
