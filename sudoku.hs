@@ -3,7 +3,7 @@ module Sudoku where
 
 	------------------------------- Tipos ------------------------------
 
-	data Nonomino = Nonomino [(Int, Int)] deriving (Show)
+	data Nonomino = Nonomino [(Int, Int)] deriving (Show, Eq)
 
 	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
 
@@ -25,14 +25,22 @@ module Sudoku where
 
 	-- Devuelve la lista de las permutaciones de los nonominos que representan
 	-- tableros validos de sudoku
-	buildSudokus :: [Nonomino] -> [[Int]]
-	buildSudokus nonos = [ list | list <- permutations [0..8], validOrder list nonos]
+	buildSudokus :: [Nonomino] -> [[((Int, Int), Nonomino)]]
+	buildSudokus nonos = 
+		let f order = validMatch order nonos []
+		in [ f order | order <- permutations [0..8], (f order) /= []]
 	
-	
-	-- TODO
-	validOrder :: [Int] -> [Nonomino] -> Bool
-	validOrder perm nonos = True
 
+	-- Devuelve si la representacion del sudoku que se genera al unir los nonominos de izq a der 
+	-- en el orden dado, si no es posible se devuelve [] 
+	validMatch :: [Int] -> [Nonomino] -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
+	validMatch [] nonos board = board
+	validMatch (h:t) nonos board
+		| newBoard == [] = []
+		| otherwise = validMatch t nonos newBoard
+		where
+			newBoard = placeNonomino (nonos !! h) board
+	
 
 	-- Devuelve la nueva representacion del sudoku que se genera al colocar el nonomino, 
 	-- si no posible devuelve [] 
