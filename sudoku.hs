@@ -82,6 +82,12 @@ module Sudoku where
 	----------------------- SOLUCION SUDOKU -----------------------------
 
 	getRow :: Int -> [((Int, Int), Nonomino)] -> [Int]
-	getRow x sudoku = [ n | ((a,b), Nonomino tiles) <- sudoku,
-									(i, j, n) <- tiles,
-									a + i == x]
+	getRow x sudoku = 
+		let unOrderedRow = [ (j+b, n) | ((a,b), Nonomino tiles) <- sudoku, (i, j, n) <- tiles, a + i == x]
+		in map (\(x,y) -> y) $ sort unOrderedRow
+
+		
+	getColumn :: Int -> [((Int, Int), Nonomino)] -> [Int]
+	getColumn x sudoku = 
+		let unOrderedRow = [ (i+a, n) | ((a,b), Nonomino tiles) <- sudoku, (i, j, n) <- tiles, b + j == x]
+		in map (\(x,y) -> y) $ sort unOrderedRow
