@@ -1,18 +1,13 @@
 module Sudoku where
-	import List
+	import Data.List
 
 	------------------------------- Tipos ------------------------------
 
-	data Nonomino = Nonomino [(Int, Int)]
+	data Nonomino = Nonomino [(Int, Int)] deriving (Show)
 
 	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
 
 	---------------------- Funciones Auxiliares ------------------------
-
-	find :: (a -> Bool) -> [a] -> Maybe a
-	find f list = let candidates = filter f list in case candidates of
-		[] -> Nothing
-		_ -> Just (head candidates)
 
 	-- Devuelve la lista de tuplas (x, xs) donde x es un elemento de la lista dada
 	-- y xs es el resto
@@ -31,18 +26,42 @@ module Sudoku where
 	-- Devuelve la lista de las permutaciones de los nonominos que representan
 	-- tableros validos de sudoku
 	buildSudokus :: [Nonomino] -> [[Int]]
-	buildSudokus nonos = [ list | list <- permutations [0..8],
-											validOrder list nonos]
-
-
+	buildSudokus nonos = [ list | list <- permutations [0..8], validOrder list nonos]
+	
+	
+	-- TODO
 	validOrder :: [Int] -> [Nonomino] -> Bool
 	validOrder perm nonos = True
 
 
+	-- Devuelve la nueva representacion del sudoku que se genera al colocar el nonomino, 
+	-- si no posible devuelve [] 
+	placeNonomino :: Nonomino -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
+	placeNonomino (Nonomino points) list
+		| overlapTiles /= [] = []
+		| otherwise = list ++ [(firstEmpty, Nonomino points)]
+			where
+				firstEmpty = head $ getEmptyTiles list		-- Primera casilla vacia
+				a = fst firstEmpty
+				b = snd firstEmpty
+				overlapTiles = [ (i+a, j+b) | (i, j) <- points, isUsed (i+a, j+b) list]
+
+
+	-- Dado la posicion de una casilla y una representacion del sudoku devuelve si 
+	-- esta casilla esta ocupada en esa representacion 
+	isUsed :: (Int, Int) -> [((Int, Int), Nonomino)] -> Bool
+	isUsed (x, y) list =
+		let
+			overlaps ((u, v), Nonomino points) =
+				find (==True) (map (\(i, j) -> (i+u, j+v) == (x, y)) points) == Just (True)
+			usedTiles =  find (==True) (map overlaps list)
+		in
+			usedTiles /= Nothing
+
+
 	-- Devuelve los pares ordenados (i, j) que estan ocupados por algun Nonomino
 	getUsedTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
-	getUsedTiles list = [ (a+i, b+j) | ((a, b), Nonomino points) <- list,
-												 (i,j) <- points]
+	getUsedTiles list = [ (a+i, b+j) | ((a, b), Nonomino points) <- list, (i,j) <- points]
 
 
 	-- Devuelve los pares ordenados (i, j) que esten desocupados
