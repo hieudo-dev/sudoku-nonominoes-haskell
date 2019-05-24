@@ -1,13 +1,13 @@
 module Sudoku where
 	import Data.List
 
-	------------------------------- Tipos ------------------------------
+	------------------------------- TIPOS ------------------------------
 
 	data Nonomino = Nonomino [(Int, Int)] deriving (Show, Eq)
 
 	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
 
-	---------------------- Funciones Auxiliares ------------------------
+	---------------------------- F AUXILIARES --------------------------
 
 	-- Devuelve la lista de tuplas (x, xs) donde x es un elemento de la lista dada
 	-- y xs es el resto
@@ -21,10 +21,10 @@ module Sudoku where
 	permutations [] = [[]]
 	permutations list = [x:ys | (x, xs) <- selections list, ys <- permutations xs]
 
-	------------------------------------------
+	------------------------- GENERAR SUDOKU ---------------------------
 
-	-- Devuelve la lista de las permutaciones de los nonominos que representan
-	-- tableros validos de sudoku
+	-- Devuelve la lista de las tableros sudokus validos que se pueden generar a partir 
+	-- de la lista de nonominos dada
 	buildSudokus :: [Nonomino] -> [[((Int, Int), Nonomino)]]
 	buildSudokus nonos = 
 		let f order = validMatch order nonos []
@@ -40,7 +40,8 @@ module Sudoku where
 		| otherwise = validMatch t nonos newBoard
 		where
 			newBoard = placeNonomino (nonos !! h) board
-	
+
+			-----------------------------------------------
 
 	-- Devuelve la nueva representacion del sudoku que se genera al colocar el nonomino, 
 	-- si no posible devuelve [] 
@@ -74,6 +75,5 @@ module Sudoku where
 
 	-- Devuelve los pares ordenados (i, j) que esten desocupados
 	getEmptyTiles :: [((Int, Int), Nonomino)] -> [(Int, Int)]
-	getEmptyTiles list = [ (i, j) | i <- [0..8],
-										  j <- [0..8],
-										  not (elem (i, j) $ getUsedTiles list)]
+	getEmptyTiles list = [ (i, j) | i <- [0..8], j <- [0..8], not (elem (i, j) $ getUsedTiles list)]
+
