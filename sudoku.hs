@@ -5,8 +5,6 @@ module Sudoku where
 
 	data Nonomino = Nonomino [(Int, Int, Int)] deriving (Show, Eq)
 
-	data GeoSudoku = GeoSudoku [((Int, Int), Nonomino)]
-
 	---------------------------- F AUXILIARES --------------------------
 
 	-- Devuelve la lista de tuplas (x, xs) donde x es un elemento de la lista dada
@@ -32,7 +30,7 @@ module Sudoku where
 	
 
 	-- Devuelve si la representacion del sudoku que se genera al unir los nonominos de izq a der 
-	-- en el orden dado, si no es posible se devuelve [] 
+	-- en el orden dado es valida, si no se devuelve [] 
 	validMatch :: [Int] -> [Nonomino] -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
 	validMatch [] nonos board = board
 	validMatch (h:t) nonos board
@@ -44,7 +42,7 @@ module Sudoku where
 			-----------------------------------------------
 
 	-- Devuelve la nueva representacion del sudoku que se genera al colocar el nonomino, 
-	-- si no posible devuelve [] 
+	-- en un sudoku dado, si no es posible devuelve [] 
 	placeNonomino :: Nonomino -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
 	placeNonomino (Nonomino tiles) list
 		| (overlapTiles /= []) || (not $ isInside (Nonomino tiles) firstEmpty) = []
@@ -58,16 +56,11 @@ module Sudoku where
 					let outsideTile = find (\(x,y,_) -> (x+a>8) || (y+b>8) || (y+b<0)) tiles
 					in outsideTile == Nothing 
 
+
 	-- Dado la posicion de una casilla y una representacion del sudoku devuelve si 
 	-- esta casilla esta ocupada en esa representacion 
 	isUsed :: (Int, Int) -> [((Int, Int), Nonomino)] -> Bool
-	isUsed (x, y) list =
-		let
-			overlaps ((u, v), Nonomino tiles) =
-				find (==True) (map (\(i, j, _) -> (i+u, j+v) == (x, y)) tiles) == Just (True)
-			usedTiles =  find (==True) (map overlaps list)
-		in
-			usedTiles /= Nothing
+	isUsed (x, y) list = elem (x, y) $ getUsedTiles list
 
 
 	-- Devuelve los pares ordenados (i, j) que estan ocupados por algun Nonomino
