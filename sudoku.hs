@@ -30,7 +30,7 @@ module Sudoku where
 	
 
 	-- Devuelve si la representacion del sudoku que se genera al unir los nonominos de izq a der 
-	-- en el orden dado es valida, si no se devuelve [] 
+	-- en el orden dado es valida, si no es valido se devuelve [] 
 	validMatch :: [Int] -> [Nonomino] -> [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
 	validMatch [] nonos board = board
 	validMatch (h:t) nonos board
@@ -73,6 +73,10 @@ module Sudoku where
 	getEmptyTiles list = [ (i, j) | i <- [0..8], j <- [0..8], not (elem (i, j) $ getUsedTiles list)]
 
 	----------------------- SOLUCION SUDOKU -----------------------------
+	
+	-- solutionsSudoku :: [((Int, Int), Nonomino)] -> [(Int, Int), Int)]
+	-- solutionsSudoku sudoku = 
+	
 
 	getRow :: Int -> [((Int, Int), Nonomino)] -> [Int]
 	getRow x sudoku = 
@@ -80,7 +84,36 @@ module Sudoku where
 		in map (\(x,y) -> y) $ sort unOrderedRow
 
 		
-	getColumn :: Int -> [((Int, Int), Nonomino)] -> [Int]
-	getColumn x sudoku = 
+	getCol :: Int -> [((Int, Int), Nonomino)] -> [Int]
+	getCol x sudoku = 
 		let unOrderedRow = [ (i+a, n) | ((a,b), Nonomino tiles) <- sudoku, (i, j, n) <- tiles, b + j == x]
 		in map (\(x,y) -> y) $ sort unOrderedRow
+
+
+	-- Devuelve la lista de numeros que NO pueden ser colocados en la casilla (x, y) 
+	usedNbers :: (Int, Int) -> ((Int, Int), Nonomino) -> [((Int, Int), Nonomino)] -> [Int]
+	usedNbers (x, y) ((i, j), Nonomino points) sudoku
+		| hintNumber /= 0 = [ a | a <- [1..9], a /= hintNumber]
+		| otherwise = let
+			nonomino = [n | (a, b, n) <- points, (a+i, b+j) == (x, y)]
+			row = [ n | n <- getRow x sudoku, n /= 0]
+			col = [ n | n <- getCol y sudoku, n /= 0]
+			in union (union row col) nonomino
+			where 
+				hintTile = find (\(a, b, n) -> (x, y) == (i+a, j+b)) points
+				Just (_,_,hintNumber) = hintTile
+			
+			
+	-- Devuelve la lista de numeros que pueden ser colocados en la casilla (x, y) 
+	unusedNbers :: (Int, Int) -> ((Int, Int), Nonomino) -> [((Int, Int), Nonomino)] -> [Int]
+	unusedNbers (x, y) ((i, j), Nonomino points) sudoku = 
+		[ n | n <- [1..9], 
+				not (elem n $ usedNbers (x, y) ((i, j), Nonomino points) sudoku)]
+
+
+	-- Devuelve la lista de todas las casillas junto a la lista de los numeros que se pueden
+	-- colocar en esta (casilla, [Opciones de #s])
+	choices :: [((Int, Int), Nonomino)] -> [[((Int, Int), ][Int])]
+	choices sudoku = [ ((a+i, b+j), unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku) | 
+												((i, j), Nonomino points) <- sudoku, (a, b, _) <- points,
+												length (unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku) /= 1]

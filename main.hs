@@ -3,14 +3,14 @@ module Main where
 	import System.Environment
 	import Sudoku
 	
-	-- Imprime los elementos de una lista separados con un fin de linea
+	-- Imprime los elementos de una lista separados linea por linea
 	printline [] = do print("-----------------------")
 	printline (h:t) = do 
 		putStrLn (show h)
 		printline t
 	
 	main = do
-		printline  test
+		printline  board
 		printline  test2
 		
 
@@ -28,4 +28,5 @@ module Main where
 
 						
 	test = head $ buildSudokus testNonos
-	test2 = [ getRow i (head $ buildSudokus testNonos) | i <- [0..8]]
+	board = [ getRow i (head $ buildSudokus testNonos) | i <- [0..8]]
+	test2 = choices test
