@@ -1,5 +1,6 @@
 module Sudoku where
 	import Data.List
+	import Debug.Trace
 
 	------------------------------- TIPOS ------------------------------
 
@@ -74,9 +75,55 @@ module Sudoku where
 
 	----------------------- SOLUCION SUDOKU -----------------------------
 	
-	-- solutionsSudoku :: [((Int, Int), Nonomino)] -> [(Int, Int), Int)]
-	-- solutionsSudoku sudoku = 
-	
+	solutionSudoku :: [((Int, Int), Nonomino)] -> [((Int, Int), Nonomino)]
+	solutionSudoku sudoku = 
+		let
+			sortChoices ((i,j), list, id) ((a,b), list2, id2)
+				| length list < length list2 = LT
+				| otherwise = GT
+			solution = solve (sortBy sortChoices $ choices sudoku) (usedsRows sudoku) (usedsCols sudoku) (usedsNonos sudoku) []
+			f ((i,j), Nonomino points)	= 
+				let
+					isHint (a,b) = find (\((x,y), number) -> (a+i,b+j) == (x,y)) solution == Nothing
+					unwrap (Just (x)) = let (_,b) = x in b
+					newPoints = [ if isHint (a,b) then (a,b,n) 
+										else (a,b, unwrap $ find (\((x,y), number) -> (a+i,b+j) == (x,y)) solution) 
+										| (a,b,n) <- points]
+				in
+					((i,j), Nonomino newPoints)
+		in
+			map f sudoku
+
+	solve [] _ _ _ sol = sol
+	solve (h:t) usedR usedC usedNono sol
+		| options == [] = []
+		| result == Nothing = []
+		| otherwise = let Just (x,y,n, solution) = result in solution
+		where
+			((i, j), options, nonoId) = h
+			update n used x = [ if it /= x then used !! it else union [n] (used !! it) | it <- [0..8]]
+			choices = [ (i, j, n, update n usedR i, update n usedC j, update n usedNono nonoId) | n <- options, 
+						(not(elem n $ usedR !! i) && not (elem n $ usedC !! j) && not (elem n $ usedNono !! nonoId))]
+			choseResult [] = Nothing
+			choseResult (choice:rs) = 
+				let
+					(i, j, n, newR, newC, newNono) = choice
+					result = solve t newR newC newNono (((i,j),n):sol)
+				in
+					if result == [] then choseResult rs else Just (i,j,n,result)
+			result = choseResult choices
+			
+	usedsRows sudoku = 
+		[ [ n | n <- [1..9], elem n $ getRow i sudoku] 
+			| i <- [0..8]]
+	usedsCols sudoku = 
+		[ [ n | n <- [1..9], elem n $ getCol i sudoku] 
+			| i <- [0..8]]
+	usedsNonos sudoku = 
+		[ [n | (_,_, n) <- points, n /= 0] 
+			| ((_,_), Nonomino points) <- sudoku]
+
+
 
 	getRow :: Int -> [((Int, Int), Nonomino)] -> [Int]
 	getRow x sudoku = 
@@ -113,7 +160,9 @@ module Sudoku where
 
 	-- Devuelve la lista de todas las casillas junto a la lista de los numeros que se pueden
 	-- colocar en esta (casilla, [Opciones de #s])
-	choices :: [((Int, Int), Nonomino)] -> [[((Int, Int), ][Int])]
-	choices sudoku = [ ((a+i, b+j), unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku) | 
-												((i, j), Nonomino points) <- sudoku, (a, b, _) <- points,
-												length (unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku) /= 1]
+	choices :: [((Int, Int), Nonomino)] -> [((Int, Int),[Int], Int)]
+	choices sudoku = 
+		let getIndex (Just (x)) = x in
+			[ ((a+i, b+j), unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku, getIndex $ elemIndex ((i, j), Nonomino points) sudoku) | 
+							((i, j), Nonomino points) <- sudoku, (a, b, _) <- points,
+							length (unusedNbers (a+i, b+j) ((i, j), Nonomino points) sudoku) /= 1]
