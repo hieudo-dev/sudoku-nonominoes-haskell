@@ -3,16 +3,15 @@ Proyecto de programación Declarativa - C411 Hieu Do Ngoc
 
 ## Detalles de implementación
 
-La estructura del proyecto separa cada componente de la aplicación para su fácil entendimiento.
+La estructura del proyecto separa cada componente de la aplicación en diferentes módulos.
 
 ```d
+types.hs
+matching.hs
+solutions.hs
+tests.hs
+print.hs
 main.hs
-point.hs
-nonomino.hs
-builder.hs
-solver.hs
-printer.hs
-test.hs
 ```
 
 Para la solución del problema se implementó 2 estructuras que representan los nonominós y los sudokus.
