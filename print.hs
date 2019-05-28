@@ -29,8 +29,12 @@ module Print where
 			rowStr 9 = ""
 			rowStr j =
 				if sameNonomino (n,j) (n,j+1) sudoku
-				then " " ++ show (row !! j) ++ " " ++ rowStr (j+1)
-				else " " ++ show (row !! j) ++ "|" ++ rowStr (j+1)
+				then 
+					if row !! j == 0 then "   " ++ rowStr (j+1)
+					else " " ++ show (row !! j) ++ " " ++ rowStr (j+1)
+				else
+					if row !! j == 0 then "  |" ++ rowStr (j+1)
+					else " " ++ show (row !! j) ++ "|" ++ rowStr (j+1)
 			separator 9 = ""
 			separator j =
 				if sameNonomino (n,j) (n+1,j) sudoku
