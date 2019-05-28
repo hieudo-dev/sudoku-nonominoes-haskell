@@ -15,6 +15,9 @@ module Main where
 		let
 			sudoku = head $ buildSudokus testNonominos
 			sol = solutionSudoku sudoku
-			board = [ getRow i sol | i <- [0..8]]
 		in
-			do putStrLn $ unlines $ sudokuToString sudoku
+			do 
+				putStrLn " ++ SUDOKU ARMADO ++"
+				putStrLn $ unlines $ sudokuToString sudoku
+				putStrLn " ++ SUDOKU SOLUCIONADO ++"
+				putStrLn $ unlines $ sudokuToString sol
